@@ -1,0 +1,59 @@
+
+/* HERO */
+
+#hero {
+  background-image: url("/static/assets/img/hero/BlueSkies_White-Clouds.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.hero-title {
+    font-size: 200px;
+}
+
+/* Centers div with this class */
+
+.center-items {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.center-v {
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Resizes image for cafe card in the home page  */
+.pic img {
+  width: 150px;
+  height: 120px;
+  justify-content: left;
+  align-items: left;
+}
+
+
+/* Used to make the title of each cafe cards a link */
+.cafe-link {
+    color: black;
+    cursor: pointer;
+    text-decoration:none;
+}
+
+.cafe-link:hover{
+    text-decoration:underline;
+}
+
+.delete-btn {
+    color: #ff0f0f;
+}
+
+.delete-btn:hover {
+    color: #ff8383;
+}
+
+.delete-btn:active {
+    color: #ff0f0f; !important
+}
