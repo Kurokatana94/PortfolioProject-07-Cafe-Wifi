@@ -10,25 +10,23 @@
 {% endblock %}
 
 {% block body %}
-<div class="row center-items">
-<!--  I can put tag toggles here-->
-  <div class="col-md-3 px-md-5">
-    hello <!-- PLACEHOLDER FOR TAGS (?) -->
-  </div>
+<div class="row">
 <!-- ===================== CAFE CARDS ====================== -->
-  <div class="col-md-4 px-md-5">
+  <div class="offset-md-4 col-md-4 px-md-5">
     <ul class="list-unstyled">
-      {% for cafe in cafe_list %}
+      <!--   Goes through a for loop checking from which to which entry it should render cards (divided in 10 cards pages).
+      Fully automated. In case there would be more than 10 new entries in the last page, a new page will be created   -->
+      {% for cafe in cafe_list[(request.path.strip('/')|int-1)*10:request.path.strip('/')|int*10-1] %}
       <li>
-        <div class="mx-3 mx-md-0 d-flex flex-column flex-lg-row gap-3 align-items-start align-items-lg-center py-3 link-body-emphasis text-decoration-none border-top">
+        <div class="mx-3 mx-md-0 d-flex flex-column flex-lg-row gap-3 align-items-start align-items-lg-center py-3 text-decoration-none border-top">
           <!-- Image Column -->
           <div class="col-12 col-lg-4">
             <img src="{{ cafe.img_url }}" class="img-fluid w-100" style="border-radius: 0;" alt="Cafe Image">
           </div>
-          <div class="col-lg-5" style="text-align: left">
+          <div class="col-lg-6" style="text-align: left">
             <a target="_blank" href="{{cafe.map_url}}" class="cafe-link"><h6 class="mb-0">{{cafe.name}}</h6></a>
             <small class="text-body-secondary">{{cafe.location}}</small>
-            <div>
+            <div class="mt-4">
               {% if cafe.has_toilet == 1 %} <i class="bi bi-badge-wc" style="color: #32CD32"></i> {% else %} <i class="bi bi-badge-wc" style="color: red"></i> {% endif %}
               {% if cafe.has_wifi == 1 %} <i class="bi bi-wifi" style="color: #32CD32"></i> {% else %} <i class="bi bi-wifi-off" style="color: red"></i> {% endif %}
               {% if cafe.has_sockets == 1 %} <i class="bi bi-plug" style="color: #32CD32"></i> {% else %} <i class="bi bi-plug" style="color: red"></i> {% endif %}
@@ -40,10 +38,14 @@
             <div><i class="bi bi-cup-hot"></i> {{cafe.coffee_price}} </div>
           </div>
           <!-- EDIT/DELETE -->
-          <div>
-            <a type="button" href="{{url_for('edit', _id=cafe.id)}}"><i class="bi bi-pencil-square btn"></i></a>
-            <a type="button" data-bs-toggle="modal" data-bs-target="#deleteConfirmation{{cafe.id}}"><i class="bi bi-trash3 delete-btn"></i></a>
-          </div>
+          {% if current_user.is_authenticated %}
+            <div>
+              {% if current_user.id == cafe.author_id or current_user.id == 1 %}
+                <a type="button" href="{{url_for('edit', _id=cafe.id)}}"><i class="bi bi-pencil-square btn"></i></a>
+                <a class="ms-md-3" type="button" data-bs-toggle="modal" data-bs-target="#deleteConfirmation{{cafe.id}}"><i class="bi bi-trash3 delete-btn"></i></a>
+              {% endif %}
+            </div>
+          {% endif %}
         </div>
         <!-- =========================== MODAL ================================ -->
         <div class="modal modal-fade" tabindex="-1" role="dialog" id="deleteConfirmation{{cafe.id}}">
@@ -64,10 +66,23 @@
         </div>
       </li>
       {% endfor %}
+    <!-- ====================== PAGINATION ======================= -->
     </ul>
-  </div>
-  <div class="col-md-3 px-md-5">
-    placeholder for something <!-- PLACEHOLDER FOR DUNNO -->
+    <div class="center-items">
+      <ul class="pagination">
+        <li class="page-item {% if request.path.strip('/')|int == 1 %} disabled {% endif %}">
+          <a class="page-link" href="{{url_for('index_home')}}">&laquo;</a>
+        </li>
+        {% for n in range(1, cafe_list|length//10+2) %}
+          <li class="page-item {% if request.path.strip('/')|int == n %} active {% endif %}">
+            <a class="page-link" href="{{url_for('index_home', index=n)}}">{{ n }}</a>
+          </li>
+        {% endfor %}
+        <li class="page-item">
+          <a class="page-link {% if request.path.strip('/')|int == cafe_list|length//10+1 %} disabled {% endif %}" href="{{url_for('index_home', index=cafe_list|length//10+1)}}">&raquo;</a>
+        </li>
+      </ul>
+    </div>
   </div>
 </div>
 {% endblock %}

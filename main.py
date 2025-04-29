@@ -1,7 +1,6 @@
 from functools import wraps
 from flask import Flask, render_template, redirect, url_for, request, abort, flash
 from flask_sqlalchemy import SQLAlchemy
-from flask_ckeditor import CKEditor
 from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -9,8 +8,6 @@ from sqlalchemy import Integer, String, Boolean, Text
 from flask_bootstrap import Bootstrap5
 import datetime as dt
 import os
-
-#TODO GOOGLE MAPS API TO SHOW THE CAFE ON A MAP ON ITS PAGE
 
 app = Flask(__name__)
 
@@ -39,8 +36,7 @@ def admin_only(f):
 class Base(DeclarativeBase):
     pass
 
-# Connect to Database
-app.config['SECRET_KEY'] = 'OhjJK&fs3rfX1!af£4dsg%)Gsdf'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cafes.db'
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
@@ -117,11 +113,14 @@ def get_db_list(model):
         results = db.session.query(model).all()
     return [item.as_dict() for item in results]
 
-
-#TODO MULTIPAGE (10 ITEMS PER PAGE), IN HTML USE [(INDEX OF THE PAGE-1)*10+1:10*INDEX OF THE PAGE] FOR THE INDEX OF THE PAGE THOU, HOW DO i MAKE IT? /HOME/<INDEX>?
 #--------------------------------------------- HOMEPAGE ----------------------------------------------
 @app.route('/')
 def home():
+    return redirect(url_for('index_home'))
+
+@app.route('/1', defaults={'index': 1})
+@app.route('/<index>')
+def index_home(index):
     return render_template('index.html', cafe_list=get_db_list(Cafe), date=dt.datetime.today().year)
 
 #------------------------------------------------- LOGIN -------------------------------------------
@@ -187,34 +186,55 @@ def logout():
 @app.route('/add', methods=['GET', 'POST'])
 def add():
     if request.method == 'POST':
-        pass
+        form = request.form
+        new_cafe = Cafe(
+            author=current_user,
+            name=form['name'],
+            location=form['location'],
+            seats=form['seats'],
+            coffee_price=form['price'],
+            map_url=form['map'],
+            img_url=form['img'],
+            has_toilet=1 if 'toilet' in form.keys() and form['toilet'] == 'on' else 0,
+            has_wifi=1 if 'wifi' in form.keys() and form['wifi'] == 'on' else 0,
+            has_sockets=1 if 'socket' in form.keys() and form['socket'] == 'on' else 0,
+            can_take_calls=1 if 'call' in form.keys() and form['call'] == 'on' else 0,
+        )
+        db.session.add(new_cafe)
+        db.session.commit()
+        return redirect(url_for('home'))
     return  render_template('new-cafe.html', current_user=current_user, date=dt.datetime.today().year)
 
 #--------------------------------------------- EDIT POST ----------------------------------------------
 @app.route('/edit/<_id>', methods=['GET', 'POST'])
 def edit(_id):
     with app.app_context():
-        result = db.session.execute(db.select(Cafe).where(Cafe.id == _id))
-        cafe = result.scalar()
-    if request.method == 'POST':
-        pass
+        cafe = db.get_or_404(Cafe, _id)
+        if request.method == 'POST':
+            form = request.form
+            cafe.name = form['name']
+            cafe.location = form['location']
+            cafe.seats = form['seats']
+            cafe.coffee_price = form['price']
+            cafe.map_url = form['map']
+            cafe.img_url = form['img']
+            cafe.has_toilet = 1 if 'toilet' in form.keys() and form['toilet'] == 'on' else 0
+            cafe.has_wifi = 1 if 'wifi' in form.keys() and form['wifi'] == 'on' else 0
+            cafe.has_sockets = 1 if 'socket' in form.keys() and form['socket'] == 'on' else 0
+            cafe.can_take_calls = 1 if 'call' in form.keys() and form['call'] == 'on' else 0
+            db.session.commit()
+            return redirect(url_for('home'))
     return render_template('edit-cafe.html', current_user=current_user, date=dt.datetime.today().year, cafe=cafe)
 
 #--------------------------------------------- DELETE POST ----------------------------------------------
 @app.route('/delete/<_id>')
 def delete(_id):
     with app.app_context():
-        result = db.session.execute(db.select(Cafe).where(Cafe.id == _id))
-        cafe = result.scalar()
+        cafe = db.get_or_404(Cafe, _id)
         db.session.delete(cafe)
         print('removed item: ', _id)
-        # db.session.commit() !!! TO UNCOMMENT BEFORE RELEASE <------------ !!!
+        db.session.commit()  #!!! TO UNCOMMENT BEFORE RELEASE <------------ !!!
     return redirect(url_for('home'))
-
-#MAYBE I DON'T ACTUALLY NEED TO MAKE A POST PAGE
-@app.route('/post/<post_id>')
-def post():
-    return  render_template('post.html', date=dt.datetime.today().year, current_user=current_user)
 
 if __name__ == '__main__':
     app.run(debug=True)
