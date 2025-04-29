@@ -57,7 +57,7 @@ http://127.0.0.1:5000
 ```
 ## **Note**
 - The SQLite database is included with sample café data.
-- There are no users preloaded — you’ll need to register a new account to add, edit, or delete entries.
+- There ia just one preloaded — email:`admin@email.com` password:`admin`.
 
 ### Thanks for Checking It Out!
 
