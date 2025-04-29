@@ -42,15 +42,19 @@ This project is not deployed online, but it can be run locally for testing or po
 git clone https://github.com/yourusername/cafe-directory.git
 cd PortfolioProject-07-Cafe-Wifi
 ```
-2. **Install the required packages**
+2. **Change the line 39 in main.py**
+```
+app.config['SECRET_KEY'] = "Insert your key here"  <---- It can be anything you want
+```
+3. **Install the required packages**
 ```
 pip install -r requirements.txt
 ```
-3. **Run the Flask app**
+4. **Run the Flask app**
 ```
 python main.py
 ```
-4. **Open in your browser**
+5. **Open in your browser**
 ```
 http://127.0.0.1:5000
 
