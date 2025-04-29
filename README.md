@@ -61,7 +61,7 @@ http://127.0.0.1:5000
 ```
 ## **Note**
 - The SQLite database is included with sample café data.
-- There ia just one preloaded — email:`admin@email.com` password:`admin`.
+- There is just one preloaded — email:`admin@email.com` password:`admin`.
 
 ### Thanks for Checking It Out!
 
